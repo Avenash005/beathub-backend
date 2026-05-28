@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Test - Creator's Platform</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-card h2,
+        .posts-card h2,
+        .logs-card h2 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+        }
+        
+        .status-connected {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .status-disconnected {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .socket-id {
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .posts-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .post-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .post-item h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .post-item p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .post-item small {
+            color: #999;
+        }
+        
+        .logs-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 16px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            margin-bottom: 6px;
+        }
+        
+        .log-time {
+            color: #00ffff;
+            margin-right: 8px;
+        }
+        
+        .log-message {
+            color: #00ff00;
+        }
+        
+        .log-error {
+            color: #ff4444;
+        }
+        
+        .no-logs {
+            color: #666;
+            text-align: center;
+        }
+        
+        .api-result {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Creator's Platform</h1>
+            <p>Real-Time Socket.io Demo</p>
+        </header>
+
+        <div class="card status-card">
+            <h2>Connection Status</h2>
+            <p id="status" class="status-disconnected">○ Disconnected</p>
+            <div id="socketIdDisplay" class="socket-id" style="display: none;"></div>
+            <div id="errorDisplay" style="display: none; color: #f44336; margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Create New Post</h2>
+            <div class="form-group">
+                <input type="text" id="postTitle" placeholder="Post Title">
+            </div>
+            <div class="form-group">
+                <textarea id="postContent" placeholder="Post Content"></textarea>
+            </div>
+            <button id="createBtn">Create Post</button>
+        </div>
+
+        <div class="card posts-card">
+            <h2>Recent Posts</h2>
+            <div id="postsList" class="posts-list">
+                <p style="color: #666; text-align: center;">No posts yet. Create one above!</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>REST API Test</h2>
+            <button id="testApiBtn">Test API</button>
+            <div id="apiResult" class="api-result" style="display: none;"></div>
+        </div>
+
+        <div class="card logs-card">
+            <h2>Socket Logs</h2>
+            <div id="logsContainer" class="logs-container">
+                <p class="no-logs">No logs yet...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize socket with autoConnect: false as per requirements
+        const socket = io('http://localhost:5000', {
+            autoConnect: false,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
+
+        // State
+        let isConnected = false;
+        let socketId = null;
+        let posts = [];
+
+        // DOM Elements
+        const statusEl = document.getElementById('status');
+        const socketIdDisplay = document.getElementById('socketIdDisplay');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const postsList = document.getElementById('postsList');
+        const logsContainer = document.getElementById('logsContainer');
+        const apiResult = document.getElementById('apiResult');
+        const createBtn = document.getElementById('createBtn');
+        const testApiBtn = document.getElementById('testApiBtn');
+
+        // Helper: Add log entry
+        function addLog(message, isError = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span><span class="log-message ${isError ? 'log-error' : ''}">${message}</span>`;
+            
+            const noLogs = logsContainer.querySelector('.no-logs');
+            if (noLogs) noLogs.remove();
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 50 logs
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+            
+            console.log(`[Socket] ${message}`);
+        }
+
+        // Update connection status UI
+        function updateStatus(connected, id = null) {
+            isConnected = connected;
+            socketId = id;
+            
+            if (connected) {
+                statusEl.textContent = '● Connected';
+                statusEl.className = 'status-connected';
+                socketIdDisplay.textContent = `Socket ID: ${id}`;
+                socketIdDisplay.style.display = 'block';
+                errorDisplay.style.display = 'none';
+            } else {
+                statusEl.textContent = '○ Disconnected';
+                statusEl.className = 'status-disconnected';
+                socketIdDisplay.style.display = 'none';
+            }
+        }
+
+        // Event Listeners for Socket.io
+        socket.on('connect', () => {
+            updateStatus(true, socket.id);
+            addLog(`Connected! Socket ID: ${socket.id}`);
+        });
+
+        socket.on('disconnect', (reason) => {
+            updateStatus(false);
+            addLog(`Disconnected: ${reason}`);
+        });
+
+        socket.on('connect_error', (err) => {
+            addLog(`Connection Error: ${err.message}`, true);
+            errorDisplay.textContent = `Error: ${err.message}`;
+            errorDisplay.style.display = 'block';
+        });
+
+        // Handle newPost event for real-time notifications
+        socket.on('newPost', (data) => {
+            console.log('[Socket] Received newPost event:', data);
+            addLog(`Notification: ${data.message}`);
+            
+            // Add to posts list
+            if (data.post) {
+                posts.unshift(data.post);
+                renderPosts();
+            }
+        });
+
+        // Render posts list
+        function renderPosts() {
+            if (posts.length === 0) {
+                postsList.innerHTML = '<p style="color: #666; text-align: center;">No posts yet. Create one above!</p>';
+                return;
+            }
+            
+            postsList.innerHTML = posts.map(post => `
+                <div class="post-item">
+                    <h3>${escapeHtml(post.title)}</h3>
+                    <p>${escapeHtml(post.content)}</p>
+                    <small>By ${escapeHtml(post.author)} • ${new Date(post.createdAt).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Create post function
+        async function createPost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            
+            if (!title || !content) {
+                addLog('Please fill in both title and content', true);
+                return;
+            }
+            
+            createBtn.disabled = true;
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        content,
+                        author: 'DemoUser'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(`Post created: ${data.post.title}`);
+                    document.getElementById('postTitle').value = '';
+                    document.getElementById('postContent').value = '';
+                }
+            } catch (err) {
+                addLog(`Error: ${err.message}`, true);
+            }
+            
+            createBtn.disabled = false;
+        }
+
+        // Test REST API
+        async function testApi() {
+            try {
+                const response = await fetch('http://localhost:5000/api/home');
+                const data = await response.json();
+                apiResult.textContent = JSON.stringify(data, null, 2);
+                apiResult.style.display = 'block';
+                addLog(`REST API Response: ${JSON.stringify(data)}`);
+            } catch (err) {
+                apiResult.textContent = `Error: ${err.message}`;
+                apiResult.style.display = 'block';
+                addLog(`REST API Error: ${err.message}`, true);
+            }
+        }
+
+        // Load existing posts
+        async function loadPosts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/posts');
+                const data = await response.json();
+                if (data.posts && data.posts.length > 0) {
+                    posts = data.posts;
+                    renderPosts();
+                }
+            } catch (err) {
+                console.log('Could not load posts:', err.message);
+            }
+        }
+
+        // Event handlers
+        createBtn.addEventListener('click', createPost);
+        testApiBtn.addEventListener('click', testApi);
+
+        // Initial setup: Connect socket
+        addLog('Initializing Socket.io connection...');
+        socket.connect();
+
+        // Load posts after connection
+        setTimeout(loadPosts, 1000);
+    </script>
+</body>
+</html>
