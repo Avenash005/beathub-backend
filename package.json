@@ -1,0 +1,14 @@
+{
+  "name": "creators-platform",
+  "version": "1.0.0",
+  "description": "Creator's Platform with Socket.io for real-time communication",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  }
+}

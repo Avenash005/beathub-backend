@@ -1,0 +1,114 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #282c34;
+  color: white;
+}
+
+.App-header {
+  background-color: #1a1d23;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+}
+
+.App-header p {
+  margin: 10px 0 0;
+  opacity: 0.8;
+}
+
+.App-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.status-card,
+.api-card,
+.logs-card {
+  background-color: #2d3139;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.status-card h2,
+.api-card h2,
+.logs-card h2 {
+  margin-top: 0;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+.status-connected {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.status-disconnected {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.error {
+  color: #f44336;
+}
+
+.api-card button {
+  background-color: #61dafb;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.api-card button:hover {
+  background-color: #4fa8d1;
+}
+
+code {
+  background-color: #1a1d23;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.logs-container {
+  background-color: #1a1d23;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 5px 0;
+  border-bottom: 1px solid #333;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: #888;
+  margin-right: 10px;
+}
+
+.log-message {
+  color: #ddd;
+}
+
+.no-logs {
+  color: #666;
+  font-style: italic;
+}
